@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "Social Influence Study"
+version = "1.0.0"
+description = "Randomised Control Trial (RCT) to study herding effect on Reddit"
+authors = ["Mika Senghaas <accounts@jonassenghaas.de>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+praw = "^7.7.0"
+pandas = "^1.5.3"
+python-dotenv = "^1.0.0"
+tqdm = "^4.65.0"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+ruff = "^0.0.260"
+pydocstyle = "^6.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
