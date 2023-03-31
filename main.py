@@ -67,7 +67,7 @@ def main():
     logger.info("[DONE] Extracting new submissions")
 
     # load previous batch of reddit posts
-    previous_submissions_df = read_csv("data.csv")
+    previous_submissions_df = read_csv(DATA_PATH)
     if previous_submissions_df is None:
         write_csv(new_submissions_df, DATA_PATH)
         logger.info("No previous days found. Initializing CSV with new submissions")

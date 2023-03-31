@@ -1,5 +1,8 @@
 # config.py
+import os
 
-DATA_PATH = "results.csv"
-LOGGING_PATH = "logs.txt"
+BASE_PATH = os.getcwd()
+DATA_PATH = os.path.join(BASE_PATH, "results.csv")
+LOGGING_PATH = os.path.join(BASE_PATH, "experiment.log")
+
 N = 1000
