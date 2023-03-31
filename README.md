@@ -55,7 +55,7 @@ and add the following line:
 The popularity metrics for the Reddit posts are continuously written to a CSV
 file called `results.csv`.
 
-The experiment creates logs in the file `logs.txt` to oversee the progress of
+The experiment creates logs in the file `experiment.log` to oversee the progress of
 the experiment over time and to debug potential issues.
 
 ## 📝 License
