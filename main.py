@@ -6,7 +6,6 @@ import pandas as pd
 from utils import (
     get_logger,
     reddit_login,
-    get_random_submissions,
     extract_submission_meta,
     submissions_to_df,
     read_csv,
