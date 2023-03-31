@@ -64,28 +64,6 @@ def reddit_login(client_id, client_secret, username, password, user_agent):
     return reddit
 
 
-def get_random_submissions(reddit, n=100):
-    """
-    Get n random posts from all subreddits
-
-    Args:
-        reddit (praw.Reddit): reddit api object
-        n (int, optional): number of posts to get. Defaults to 100.
-
-    Returns:
-        list: list of praw.models.Submission objects
-    """
-    random_submissions = []
-    for sub in reddit.subreddit("all").stream.submissions():
-        if sub.num_comments == 0 and sub.score == 1 and not sub.over_18:
-            random_submissions.append(sub)
-
-        if len(random_submissions) == n:
-            break
-
-    return random_submissions
-
-
 def extract_submission_meta(sub: praw.models.Submission) -> dict:
     """
     Extract submission metadata

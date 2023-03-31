@@ -31,7 +31,14 @@ def main():
     reddit = reddit_login(client_id, client_secret, username, password, useragent)
 
     # get new batch of reddit posts
-    new_submissions = get_random_submissions(reddit, n=N)
+    new_submissions = []
+    for sub in reddit.subreddit("all").stream.submissions():
+        if sub.num_comments == 0 and sub.score == 1 and not sub.over_18:
+            new_submissions.append(sub)
+            logger.info(f"Loading Submission '{sub.id}'")
+
+        if len(new_submissions) == N:
+            break
 
     # upvote the first half of the batch
     extracted_posts = []
