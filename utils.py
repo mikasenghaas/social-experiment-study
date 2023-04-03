@@ -115,9 +115,9 @@ def submissions_to_df(reddit_posts, new=False):
     # create df of new reddit posts
     df = pd.DataFrame(reddit_posts)
 
-    # add column of zeros for day
+    # add column of ones for day
     if new:
-        df["day"] = 0
+        df["day"] = 1
 
     # reorder columns
     df = df[column_order]
