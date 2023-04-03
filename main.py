@@ -27,43 +27,37 @@ def main():
     useragent = os.getenv("USERAGENT")
     logger.info("[DONE] Loading environment variables")
 
+    # login to reddit
     reddit = reddit_login(client_id, client_secret, username, password, useragent)
+    logger.info("[DONE] Logging into Reddit")
 
-    # get new batch of reddit posts
-    new_submissions = []
+    # load new submissions from r/all
+    new_submissions : list[dict ]= []
     for sub in reddit.subreddit("all").stream.submissions():
+        # only consider adequate submissions with no comments and score of 1
         if sub.num_comments == 0 and sub.score == 1 and not sub.over_18:
-            new_submissions.append(sub)
-            logger.info(f"Loading Submission '{sub.id}'")
+            # extract submission meta data
+            sub_meta: dict = extract_submission_meta(sub)
+            logger.info(f"Extracted Submission '{sub_meta['id']}'")
+
+            if len(new_submissions) < N // 2:
+                try:
+                    # try to upvote submission
+                    sub.upvote()
+                    sub_meta.update({"treatment": 1})
+                except Exception:
+                    logger.warning(f"Could not upvote. Disregarding '{sub_meta['id']}'")
+                    continue
+            else:
+                sub_meta.update({"treatment": 0})
+
+            # append to list of new submissions
+            new_submissions.append(sub_meta)
 
         if len(new_submissions) == N:
             break
 
-    # upvote the first half of the batch
-    extracted_posts = []
-    for i, submission in enumerate(new_submissions):
-        # extract metadata
-        submission_meta: dict = extract_submission_meta(submission)
-
-        # log extracted submission
-        logger.info(
-            f"Extracted Submission '{submission_meta['id']}' "
-            f"from '{submission_meta['subreddit']}'"
-        )
-
-        # upvote the submission
-        if i < N // 2:
-            try:
-                submission.upvote()
-            except Exception:
-                logger.warning(f"Could not upvote submission '{submission_meta['id']}'")
-            submission_meta.update({"treatment": 1})
-        else:
-            submission_meta.update({"treatment": 0})
-
-        extracted_posts.append(submission_meta)
-
-    new_submissions_df = submissions_to_df(extracted_posts, new=True)
+    new_submissions_df = submissions_to_df(new_submissions, new=True)
     logger.info("[DONE] Extracting new submissions")
 
     # load previous batch of reddit posts
@@ -91,7 +85,13 @@ def main():
     # track popularity metrics for all posts
     tracked_submissions = []
     for i, (sub_id, day, treatment) in enumerate(submission_to_track):
-        submission = reddit.submission(id=sub_id)
+        try:
+            submission = reddit.submission(id=sub_id)
+        except Exception:
+            logger.warning(f"Could not find Submission '{sub_id}'. Disregarding")
+            continue
+
+        # extract submission meta data
         submission_meta = extract_submission_meta(submission)
         submission_meta.update({"day": day + 1, "treatment": treatment})
         logger.info(
