@@ -36,8 +36,12 @@ def main():
     for sub in reddit.subreddit("all").stream.submissions():
         # only consider adequate submissions with no comments and score of 1
         if sub.num_comments == 0 and sub.score == 1 and not sub.over_18:
-            # extract submission meta data
-            sub_meta: dict = extract_submission_meta(sub)
+            try:
+                # extract submission meta data
+                sub_meta: dict = extract_submission_meta(sub)
+            except Exception:
+                logger.warning(f"Could not extract Submission '{sub.id}'. Disregarding")
+                continue
             logger.info(f"Extracted Submission '{sub_meta['id']}'")
 
             if len(new_submissions) < N // 2:
@@ -86,19 +90,21 @@ def main():
     tracked_submissions = []
     for i, (sub_id, day, treatment) in enumerate(submission_to_track):
         try:
-            submission = reddit.submission(id=sub_id)
+            # get submission object with specified id
+            sub = reddit.submission(id=sub_id)
+
+            # extract submission meta data
+            sub_meta = extract_submission_meta(sub)
         except Exception:
-            logger.warning(f"Could not find Submission '{sub_id}'. Disregarding")
+            logger.warning(f"Could not extract Submission '{sub_id}'. Disregarding")
             continue
 
-        # extract submission meta data
-        submission_meta = extract_submission_meta(submission)
-        submission_meta.update({"day": day + 1, "treatment": treatment})
+        sub_meta.update({"day": day + 1, "treatment": treatment})
         logger.info(
-            f"Tracking Submission '{submission_meta['id']}' "
-            f"on Day {submission_meta['day']}"
+            f"Tracking Submission '{sub_meta['id']}' "
+            f"on Day {sub_meta['day']}"
         )
-        tracked_submissions.append(submission_meta)
+        tracked_submissions.append(sub_meta)
     tracked_submissions_df = submissions_to_df(tracked_submissions, new=False)
 
     # combine new and tracked submissions
