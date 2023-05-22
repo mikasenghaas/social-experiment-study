@@ -100,7 +100,7 @@ def submissions_to_df(reddit_posts, new=False):
     # create df from list of strings and set index col to id
     column_order = [
         "id",
-        "day",
+        "iteration"
         "datetime",
         "title",
         "score",
@@ -115,14 +115,14 @@ def submissions_to_df(reddit_posts, new=False):
     # create df of new reddit posts
     df = pd.DataFrame(reddit_posts)
 
-    # add column of ones for day
+    # add column of ones for iteration
     if new:
-        df["day"] = 1
+        df["iteration"] = 1
 
     # reorder columns
     df = df[column_order]
 
-    return df.set_index(keys=["id", "day"])
+    return df.set_index(keys=["id", "iteration"])
 
 
 def read_csv(filename: str) -> pd.DataFrame:
@@ -136,7 +136,7 @@ def read_csv(filename: str) -> pd.DataFrame:
         pd.DataFrame: dataframe
     """
     try:
-        return pd.read_csv(filename, index_col=["id", "day"])
+        return pd.read_csv(filename, index_col=["id", "iteration"])
     except FileNotFoundError:
         return None
 

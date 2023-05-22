@@ -13,6 +13,8 @@ from utils import (
 )
 from config import DATA_PATH, N
 
+NUMBER_OF_ITERATIONS = 12
+
 
 def main():
     # get loggin object
@@ -32,7 +34,7 @@ def main():
     logger.info("[DONE] Logging into Reddit")
 
     # load new submissions from r/all
-    new_submissions : list[dict ]= []
+    new_submissions: list[dict] = []
     for sub in reddit.subreddit("all").stream.submissions():
         # only consider adequate submissions with no comments and score of 1
         if sub.num_comments == 0 and sub.score == 1 and not sub.over_18:
@@ -49,8 +51,11 @@ def main():
                     # try to upvote submission
                     sub.upvote()
                     sub_meta.update({"treatment": 1})
-                except Exception:
-                    logger.warning(f"Could not upvote. Disregarding '{sub_meta['id']}'")
+                except Exception as e:
+                    logger.warning(
+                        f"Could not upvote ({e}). Disregarding '{sub_meta['id']}'"
+                    )
+
                     continue
             else:
                 sub_meta.update({"treatment": 0})
@@ -68,19 +73,23 @@ def main():
     previous_submissions_df = read_csv(DATA_PATH)
     if previous_submissions_df is None:
         write_csv(new_submissions_df, DATA_PATH)
-        logger.info("No previous days found. Initializing CSV with new submissions")
+        logger.info("No previous iter found. Initializing CSV with new submissions")
         logger.info("[DONE] Run")
         return
 
     logger.info("[DONE] Loading previous submissions")
 
-    # filter out posts that have been tracked for more than 7 days
+    # filter out posts that have been tracked for more than NUMBER_OF_ITERATIONS
     submissions_to_track = (
-        previous_submissions_df.reset_index().groupby(["id", "treatment"]).max("day")
+        previous_submissions_df.reset_index()
+        .groupby(["id", "treatment"])
+        .max("iteration")
     )
-    submissions_to_track = submissions_to_track[submissions_to_track["day"] < 7]
+    submissions_to_track = submissions_to_track[
+        submissions_to_track["iteration"] < NUMBER_OF_ITERATIONS
+    ]
     submissions_to_track = submissions_to_track.reset_index()
-    submissions_to_track = submissions_to_track[["id", "day", "treatment"]]
+    submissions_to_track = submissions_to_track[["id", "iteration", "treatment"]]
 
     # convert to list of tuples
     submission_to_track = submissions_to_track.to_records(index=False)
@@ -88,7 +97,7 @@ def main():
 
     # track popularity metrics for all posts
     tracked_submissions = []
-    for i, (sub_id, day, treatment) in enumerate(submission_to_track):
+    for i, (sub_id, iteration, treatment) in enumerate(submission_to_track):
         try:
             # get submission object with specified id
             sub = reddit.submission(id=sub_id)
@@ -99,10 +108,9 @@ def main():
             logger.warning(f"Could not extract Submission '{sub_id}'. Disregarding")
             continue
 
-        sub_meta.update({"day": day + 1, "treatment": treatment})
+        sub_meta.update({"iteration": iteration + 1, "treatment": treatment})
         logger.info(
-            f"Tracking Submission '{sub_meta['id']}' "
-            f"on Day {sub_meta['day']}"
+            f"Tracking Submission '{sub_meta['id']}' " f" ({sub_meta['iteration']})"
         )
         tracked_submissions.append(sub_meta)
     tracked_submissions_df = submissions_to_df(tracked_submissions, new=False)
