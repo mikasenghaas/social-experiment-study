@@ -100,7 +100,7 @@ def submissions_to_df(reddit_posts, new=False):
     # create df from list of strings and set index col to id
     column_order = [
         "id",
-        "iteration"
+        "iteration",
         "datetime",
         "title",
         "score",
