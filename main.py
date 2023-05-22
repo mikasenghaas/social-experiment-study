@@ -11,9 +11,7 @@ from utils import (
     read_csv,
     write_csv,
 )
-from config import DATA_PATH, N
-
-NUMBER_OF_ITERATIONS = 12
+from config import DATA_PATH, M, N
 
 
 def main():
@@ -79,14 +77,14 @@ def main():
 
     logger.info("[DONE] Loading previous submissions")
 
-    # filter out posts that have been tracked for more than NUMBER_OF_ITERATIONS
+    # filter out posts that have been tracked for more than M
     submissions_to_track = (
         previous_submissions_df.reset_index()
         .groupby(["id", "treatment"])
         .max("iteration")
     )
     submissions_to_track = submissions_to_track[
-        submissions_to_track["iteration"] < NUMBER_OF_ITERATIONS
+        submissions_to_track["iteration"] < M
     ]
     submissions_to_track = submissions_to_track.reset_index()
     submissions_to_track = submissions_to_track[["id", "iteration", "treatment"]]

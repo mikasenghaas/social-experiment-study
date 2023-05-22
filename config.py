@@ -5,4 +5,5 @@ BASE_PATH = os.getcwd()
 DATA_PATH = os.path.join(BASE_PATH, "results.csv")
 LOGGING_PATH = os.path.join(BASE_PATH, "experiment.log")
 
-N = 1000
+M = 24 # number of iterations
+N = 1000 # number of samples per iterations
